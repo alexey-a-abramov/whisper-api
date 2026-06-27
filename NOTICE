@@ -1,0 +1,22 @@
+whisper-api
+Copyright (C) 2026 Alexey Abramov
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version. See the LICENSE file for the full text.
+
+This product bundles or depends on third-party software:
+
+- whisper.cpp (https://github.com/ggml-org/whisper.cpp) — MIT License.
+  Built/invoked at runtime for the native transcription engine.
+- Whisper models (OpenAI) — distributed under the MIT License; GGML conversions
+  hosted at https://huggingface.co/ggerganov/whisper.cpp.
+- @huggingface/transformers / transformers.js — Apache-2.0 License.
+- onnxruntime-node — MIT License.
+- ffmpeg-static (bundled FFmpeg binaries) — FFmpeg is licensed under LGPL/GPL;
+  see https://github.com/eugeneware/ffmpeg-static for build details.
+- fastify and @fastify/* plugins — MIT License.
+
+The names "Whisper" and "OpenAI" are used only to describe API compatibility.
+This project is not affiliated with or endorsed by OpenAI.

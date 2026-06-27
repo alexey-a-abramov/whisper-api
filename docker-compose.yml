@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Quick start:
+#   docker compose up -d --build
+#   docker compose exec whisper-api node bin/whisper-api.js key generate
+#   curl localhost:8080/health
+services:
+  whisper-api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      WHISPER_API_ENGINE: onnx      # set to "auto" with build tools to use whisper.cpp
+      WHISPER_API_MODEL: base.en
+      WHISPER_API_RATE_MAX: "120"
+    volumes:
+      - whisper-data:/data          # config.json, keys.json, models, caches
+    restart: unless-stopped
+
+volumes:
+  whisper-data:

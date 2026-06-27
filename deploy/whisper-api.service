@@ -1,0 +1,31 @@
+# systemd unit for whisper-api.
+# Install:
+#   sudo cp deploy/whisper-api.service /etc/systemd/system/
+#   sudo useradd --system --home /var/lib/whisper-api --create-home whisper || true
+#   sudo -u whisper npx whisper-api@latest init       # one-time setup as the service user
+#   sudo systemctl daemon-reload && sudo systemctl enable --now whisper-api
+[Unit]
+Description=whisper-api (self-hosted OpenAI-compatible Whisper endpoint)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=whisper
+Group=whisper
+Environment=WHISPER_API_HOME=/var/lib/whisper-api
+Environment=WHISPER_API_HOST=127.0.0.1
+Environment=WHISPER_API_PORT=8080
+# Pin a version for reproducible deploys; npx caches it after first run.
+ExecStart=/usr/bin/npx --yes whisper-api@latest start
+Restart=on-failure
+RestartSec=3
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/whisper-api
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
