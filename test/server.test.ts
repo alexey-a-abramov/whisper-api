@@ -43,6 +43,7 @@ beforeAll(async () => {
     engineLabel: fakeEngine.describe(),
     version: "test",
     getEngine: async () => fakeEngine,
+    staticApiKeys: ["static-test-key"],
   });
   await app.ready();
 });
@@ -84,6 +85,18 @@ describe("server", () => {
       payload: form,
     });
     expect(res.statusCode).toBe(401);
+  });
+
+  it("accepts a fixed static API key", async () => {
+    const form = audioForm();
+    const res = await app.inject({
+      method: "POST",
+      url: "/v1/audio/transcriptions",
+      headers: { ...form.getHeaders(), authorization: "Bearer static-test-key" },
+      payload: form,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ text: "the quick brown fox" });
   });
 
   it("transcribes with a valid key", async () => {

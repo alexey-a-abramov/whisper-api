@@ -105,12 +105,24 @@ async function runInit(): Promise<void> {
   printAccessExample(`http://localhost:${config.port}`, raw);
 }
 
-async function runStart(opts: { port?: string; host?: string; model?: string; engine?: string }): Promise<void> {
+async function runStart(opts: {
+  port?: string;
+  host?: string;
+  model?: string;
+  engine?: string;
+  apiKey?: string;
+}): Promise<void> {
   ensureDirs();
   const config = applyEnvOverrides(await loadConfig());
   if (opts.port) config.port = Number(opts.port);
   if (opts.host) config.host = opts.host;
   if (opts.engine) config.engine = opts.engine as EngineChoice;
+
+  // Fixed personal token(s) from --api-key and/or WHISPER_API_KEY, accepted
+  // alongside any keys created with `whisper-api key generate`.
+  const staticApiKeys = [opts.apiKey, process.env.WHISPER_API_KEY]
+    .map((k) => (k ?? "").trim())
+    .filter((k) => k.length > 0);
 
   const model = resolveModel(opts.model || config.defaultModel, config.defaultModel);
   const allowBuild = config.engine === "whispercpp" || process.env.WHISPER_API_AUTOBUILD === "1";
@@ -147,6 +159,7 @@ async function runStart(opts: { port?: string; host?: string; model?: string; en
     engineLabel: selection.engine.describe(),
     version: VERSION,
     getEngine,
+    staticApiKeys,
   };
   const { url } = await startServer(ctx);
 
@@ -156,10 +169,15 @@ async function runStart(opts: { port?: string; host?: string; model?: string; en
       selection.engine.describe(),
     )} ${pc.dim("·")} model ${pc.bold(model.name)}`,
   );
-  if ((await countActiveKeys()) === 0) {
-    console.log(`  ${pc.yellow("!")} No API keys yet — run ${pc.bold("whisper-api key generate")}`);
+  if (staticApiKeys.length) {
+    console.log(`  ${pc.green("✓")} Accepting a fixed API key from ${pc.bold("--api-key / WHISPER_API_KEY")}`);
+  } else if ((await countActiveKeys()) === 0) {
+    console.log(
+      `  ${pc.yellow("!")} No API keys yet — run ${pc.bold("whisper-api key generate")} or start with ${pc.bold("--api-key <token>")}`,
+    );
   }
-  printAccessExample(url);
+  // Show the example with the real personal token when one was supplied.
+  printAccessExample(url, staticApiKeys[0]);
 }
 
 async function runModelsList(): Promise<void> {
@@ -272,6 +290,7 @@ function buildProgram(): Command {
     .option("--host <host>", "host to bind")
     .option("-m, --model <name>", "default model (overrides config)")
     .option("-e, --engine <engine>", "auto | whispercpp | onnx")
+    .option("-k, --api-key <token>", "fixed API key to accept (personal use); also via WHISPER_API_KEY")
     .action(runStart);
 
   const models = program.command("models").description("Manage local transcription models");

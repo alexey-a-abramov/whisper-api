@@ -1,6 +1,6 @@
 {
   "name": "whisper-api",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Self-hostable, OpenAI-compatible Whisper speech-to-text API server you can run anywhere with npx. Local inference via whisper.cpp or ONNX (transformers.js).",
   "type": "module",
   "license": "AGPL-3.0-or-later",
@@ -49,6 +49,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "version": "node scripts/sync-version.mjs && git add src/version.ts",
     "prepublishOnly": "npm run build && npm test"
   },
   "dependencies": {

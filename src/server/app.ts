@@ -8,7 +8,7 @@ import fastifyStatic from "@fastify/static";
 import type { WhisperApiConfig } from "../config";
 import type { ModelInfo } from "../models/registry";
 import type { TranscriptionEngine } from "../engine/types";
-import { authHook, extractBearer } from "./auth";
+import { makeAuthHook, extractBearer } from "./auth";
 import { errorBody } from "./formats";
 import { registerTranscriptions } from "./routes/transcriptions";
 import { registerModels } from "./routes/models";
@@ -23,6 +23,8 @@ export interface ServerContext {
   version: string;
   /** Resolve (and cache) an engine for a specific model name. */
   getEngine(modelName: string): Promise<TranscriptionEngine>;
+  /** Fixed tokens accepted in addition to generated keys (personal/simple setups). */
+  staticApiKeys: string[];
 }
 
 function findWebDir(): string | null {
@@ -50,7 +52,7 @@ export async function buildServer(ctx: ServerContext): Promise<FastifyInstance> 
       errorBody("Rate limit exceeded. Slow down or request a higher limit.", "rate_limit_error", "rate_limit_exceeded"),
   });
 
-  app.addHook("onRequest", authHook);
+  app.addHook("onRequest", makeAuthHook({ staticApiKeys: ctx.staticApiKeys }));
 
   app.setErrorHandler((err: FastifyError, req, reply) => {
     const status = (err.statusCode && err.statusCode >= 400 ? err.statusCode : 500) as number;

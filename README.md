@@ -50,6 +50,31 @@ curl http://YOUR_SERVER:8080/v1/audio/transcriptions \
   -F model=whisper-1
 ```
 
+### Personal use — one fixed token (no setup)
+
+For a single-user endpoint you don't even need `init` or the keystore. Just pick a
+secret and pass it inline — the server accepts it as a bearer key:
+
+```bash
+# choose your own token; clients send it as "Authorization: Bearer <token>"
+npx whisper-api start --api-key "my-secret-token" --model base.en
+
+# or via environment (e.g. systemd / Docker):
+WHISPER_API_KEY="my-secret-token" npx whisper-api start
+```
+
+Then from anywhere:
+
+```bash
+curl http://YOUR_SERVER:8080/v1/audio/transcriptions \
+  -H "Authorization: Bearer my-secret-token" \
+  -F file=@audio.m4a -F model=whisper-1
+```
+
+The fixed token is accepted **in addition** to any keys created with
+`whisper-api key generate`, so you can start simple and add managed keys later.
+Auth is always required — there is no unauthenticated mode.
+
 ## Using it from a third-party app
 
 Anything that supports the OpenAI API works — just change the base URL and key.
@@ -85,7 +110,7 @@ console.log(out.text);
 | Command | Description |
 | --- | --- |
 | `whisper-api init` | Interactive setup: engine, models, first API key. |
-| `whisper-api start [-p 8080] [--host 0.0.0.0] [-m base.en] [-e auto]` | Start the API server. |
+| `whisper-api start [-p 8080] [--host 0.0.0.0] [-m base.en] [-e auto] [-k <token>]` | Start the API server. `-k/--api-key` sets a fixed personal key. |
 | `whisper-api models list` | List available and installed models. |
 | `whisper-api models pull <name>` | Download a model (e.g. `large-v3`). |
 | `whisper-api models rm <name>` | Remove a downloaded GGML model. |
