@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # ---- build stage ----
-FROM node:22-bookworm-slim AS builder
+FROM node:22.23.4-bookworm-slim AS builder
 WORKDIR /app
 COPY package.json ./
 RUN npm install --no-audit --no-fund
@@ -9,7 +9,7 @@ COPY src ./src
 RUN npm run build
 
 # ---- runtime stage ----
-FROM node:22-bookworm-slim AS runtime
+FROM node:22.23.4-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     WHISPER_API_HOME=/data \
     WHISPER_API_HOST=0.0.0.0 \
